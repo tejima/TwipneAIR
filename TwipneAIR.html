@@ -6,7 +6,7 @@
   <script src="prototype.js" type="text/javascript" ></script> 
   <script type="text/javascript">
 function test_systemtray(){
-
+  air.trace("test_systemtray()");
   var iconLoadComplete = function(event) 
   { 
       air.NativeApplication.nativeApplication.icon.bitmaps = [event.target.content.bitmapData]; 
@@ -23,41 +23,53 @@ function test_systemtray(){
   }); 
 
   if (air.NativeApplication.supportsSystemTrayIcon) {
-    air.NativeApplication.nativeApplication.icon.addEventListener(window.runtime.flash.events.ScreenMouseEvent.CLICK,function(event){ 
-    air.trace("systemtray click");
+    air.NativeApplication.nativeApplication.icon.addEventListener(window.runtime.flash.events.ScreenMouseEvent.CLICK,
+    function(event){ 
+      air.trace("systemtray click");
     
-    //window.nativeWindow.activate();
+      //window.nativeWindow.activate();
+      window.nativeWindow.visible = true;
+      air.NativeApplication.nativeApplication.activate();
+      window.focus();
+      window.nativeWindow.activate();
 
-    window.nativeWindow.visible = true;
-    air.NativeApplication.nativeApplication.activate();
-    window.focus();
-    window.nativeWindow.activate();
-
-    //window.nativeWindow.orderToFront()
-
-    document.getElementById("twitterBody").focus();
-  
-  });
+      document.getElementById("twitterBody").focus();
+    }
+    );
 
       air.NativeApplication.nativeApplication.autoExit = false; 
       iconLoad.contentLoaderInfo.addEventListener(air.Event.COMPLETE,iconLoadComplete); 
       iconLoad.load(new air.URLRequest("icons/AIRApp_16.png")); 
       air.NativeApplication.nativeApplication.icon.tooltip = "AIR application"; 
       air.NativeApplication.nativeApplication.icon.menu = iconMenu; 
+  }
+  if (air.NativeApplication.supportsDockIcon) {
+    air.trace("support dock");
+    air.NativeApplication.nativeApplication.addEventListener(air.InvokeEvent.INVOKE,
+    function(event){
+      air.trace("dock click");
+      window.nativeWindow.visible = true;
+      air.NativeApplication.nativeApplication.activate();
+      window.focus();
+      window.nativeWindow.activate();
+      document.getElementById("twitterBody").focus();
+        
+      });
+    air.trace("addEventListener done");
+    air.NativeApplication.nativeApplication.autoExit = false; 
+    iconLoad.contentLoaderInfo.addEventListener(air.Event.COMPLETE,iconLoadComplete); 
+    iconLoad.load(new air.URLRequest("icons/AIRApp_128.png")); 
+    air.trace("add iconMenu done");
+    //air.NativeApplication.nativeApplication.icon.tooltip = "AIR application"; 
+    //air.trace("add iconMenu done");
+    air.NativeApplication.nativeApplication.icon.menu = iconMenu; 
+    air.trace("add iconMenu done");
+    
   } 
-
-  if (air.NativeApplication.supportsDockIcon) { 
-      iconLoad.contentLoaderInfo.addEventListener(air.Event.COMPLETE,iconLoadComplete); 
-      iconLoad.load(new air.URLRequest("icons/AIRApp_128.png")); 
-      air.NativeApplication.nativeApplication.icon.menu = iconMenu; 
-  } 
-
 }
 
 function saveAndExit(){
-
-  air.trace(window.nativeWindow.x.toString());
-  air.trace(window.nativeWindow.y.toString());
+  air.trace("saveAndExit()");
 
   var bytes = new air.ByteArray();
   bytes.writeUTFBytes(window.nativeWindow.x.toString());
@@ -78,7 +90,18 @@ function appLoad(){
   //createRootMenu();
   test_loadlocation(event);
   test_systemtray();
-  air.trace("App loaded"); 
+  air.trace("App loaded");
+
+//debug
+// window.nativeWindow.visible = true;
+//    air.NativeApplication.nativeApplication.activate();
+//    window.focus();
+//    window.nativeWindow.activate();
+//
+
+  
+  air.NativeApplication.nativeApplication.addEventListener(air.Event.EXITING,saveAndExit);
+  air.trace("add exiting event");
   air.NativeApplication.nativeApplication.icon.tooltip = "Twipne AIR";
   window.nativeWindow.addEventListener(air.Event.CLOSING, saveAndExit);
   //document.getElementById("twitterBody").focus();
@@ -215,6 +238,7 @@ function test_savelocation(event){
 }
 
 function test_loadlocation(event){
+  air.trace("test_loadlocation()");
   var storedValue = air.EncryptedLocalStore.getItem('x');
   storedValue? x = storedValue.readUTFBytes(storedValue.length) : x = 100;
 
